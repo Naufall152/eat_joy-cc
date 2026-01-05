@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Recipe;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,6 +14,12 @@ class DashboardController extends Controller
             ->where('visibility', 'public')
             ->limit(8)
             ->get(['id', 'title', 'description', 'calories', 'image']);
+
+        // ✅ bikin URL gambar biar view gampang
+        $recipes->transform(function ($r) {
+            $r->image_url = $this->resolveRecipeImageUrl($r);
+            return $r;
+        });
 
         $features = [
             [
@@ -77,15 +82,47 @@ class DashboardController extends Controller
         }
 
         // Jika free user, tampilkan dashboard biasa
-        $firstLogin = $request->session()->pull('first_login', false);
+        // ✅ kita ambil jadi boolean dan dikirim ke blade sebagai $firstLogin
+        $firstLogin = (bool) $request->session()->pull('first_login', false);
 
+        // ✅ paginate biar links() jalan
         $recipes = Recipe::where('type', 'regular')
             ->where('visibility', 'public')
+            ->latest()
             ->paginate(6);
+
+        // ✅ bikin URL gambar untuk tiap item paginator
+        $recipes->getCollection()->transform(function ($r) {
+            $r->image_url = $this->resolveRecipeImageUrl($r);
+            return $r;
+        });
 
         $blogs = $this->getBlogArticles();
 
+        // ✅ kirim firstLogin (bukan cuma session)
         return view('dashboard.user', compact('recipes', 'blogs', 'user', 'firstLogin'));
+    }
+
+    /**
+     * ✅ Resolver URL gambar recipe
+     * - kalau kamu punya kolom image_url (full URL) -> pakai itu
+     * - kalau pakai storage (kolom image) -> asset('storage/...')
+     * - fallback placeholder
+     */
+    private function resolveRecipeImageUrl($recipe): string
+    {
+        // Kalau ada kolom image_url di tabel, pakai prioritas paling atas
+        if (isset($recipe->image_url) && !empty($recipe->image_url)) {
+            return $recipe->image_url;
+        }
+
+        // Kolom image = path storage (contoh: recipes/xxx.jpg)
+        if (!empty($recipe->image)) {
+            return asset('storage/' . $recipe->image);
+        }
+
+        // Placeholder taruh di public/images/placeholder-food.jpg
+        return asset('images/placeholder-food.jpg');
     }
 
     private function getBlogArticles()

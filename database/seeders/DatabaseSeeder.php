@@ -16,10 +16,15 @@ class DatabaseSeeder extends Seeder
             'nickname' => 'Admin',
             'username' => 'admin',
             'email' => 'admin@ejoy.com',
+            'email_verified_at' => now(),
             'password' => Hash::make('admin123'),
             'current_weight' => 70,
             'target_weight' => 65,
             'subscription_plan' => 'starter_plus',
+            'role' => 'admin',
+            'is_admin' => true,
+
+
         ]);
 
         // Create test users
@@ -52,6 +57,8 @@ class DatabaseSeeder extends Seeder
             'target_weight' => 80,
             'subscription_plan' => 'starter_plus',
         ]);
+
+        $this->call(VisitorLogSeeder::class);
 
         // Create 25+ sample recipes
         $recipes = [

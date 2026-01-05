@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -17,40 +19,40 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate([
+        $credentials = $request->validate([
             'username' => 'required|string',
             'password' => 'required',
         ]);
 
-        // Debug: Cek apakah user ada di database
-        $user = User::where('username', $request->username)->first();
+        // Auth attempt (langsung)
+        if (Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']])) {
+            $request->session()->regenerate();
 
-        if ($user) {
-            // Debug: Cek password
-            if (Hash::check($request->password, $user->password)) {
-                if (Auth::attempt(['username' => $request->username, 'password' => $request->password])) {
-                    $request->session()->regenerate();
-                    $request->session()->put('first_login', true);
+            $user = Auth::user();
 
-                    // Redirect berdasarkan subscription plan
-                    if ($user->subscription_plan === 'starter') {
-                        return redirect()->route('dashboard.premium.starter');
-                    } elseif ($user->subscription_plan === 'starter_plus') {
-                        return redirect()->route('dashboard.premium.starter.plus');
-                    } else {
-                        return redirect()->route('dashboard.user');
-                    }
-                }
-            } else {
-                Log::info('Password mismatch for user: ' . $request->username);
+            // optional: kalau kamu butuh popup first login
+            $request->session()->put('first_login', true);
+
+            // ✅ ADMIN FIRST (PASTIIN PAKAI is_admin)
+            if ($user->is_admin) {
+                return redirect()->route('admin.dashboard');
             }
-        } else {
-            Log::info('User not found: ' . $request->username);
+
+            // ✅ USER biasa berdasarkan subscription_plan
+            if ($user->subscription_plan === 'starter') {
+                return redirect()->route('dashboard.premium.starter');
+            }
+
+            if ($user->subscription_plan === 'starter_plus') {
+                return redirect()->route('dashboard.premium.starter.plus');
+            }
+
+            return redirect()->route('dashboard.user');
         }
 
         return back()->withErrors([
             'username' => 'Username atau password salah.',
-        ]);
+        ])->onlyInput('username');
     }
 
     public function showRegister()
@@ -58,43 +60,70 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    public function register(Request $request)
+    public function register(Request $request): RedirectResponse
     {
-        // Debug log
         Log::info('Registration attempt:', $request->all());
 
-        $request->validate([
+        $google = session('google_register');
+        $isGoogle = !empty($google);
+
+        if ($isGoogle) {
+            $request->merge([
+                'nickname' => $google['name'] ?? $request->nickname,
+                'username' => $google['username'] ?? $request->username,
+                'email'    => $google['email'] ?? $request->email,
+            ]);
+        }
+
+        $rules = [
             'nickname' => 'required|string|max:50',
-            'username' => 'required|string|unique:users|max:30',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:8|confirmed',
+            'username' => 'required|string|max:30|unique:users,username',
+            'email'    => 'required|email|unique:users,email',
             'current_weight' => 'required|numeric|min:30|max:300',
-            'target_weight' => 'required|numeric|min:30|max:300',
-        ]);
+            'target_weight'  => 'required|numeric|min:30|max:300',
+        ];
+
+        if ($isGoogle) {
+            $rules['password'] = 'nullable|min:8|confirmed';
+        } else {
+            $rules['password'] = 'required|min:8|confirmed';
+        }
+
+        $validated = $request->validate($rules);
 
         try {
-            $user = User::create([
-                'nickname' => $request->nickname,
-                'username' => $request->username,
-                'email' => $request->email,
-                'password' => Hash::make($request->password), // Pastikan di-hash
-                'current_weight' => $request->current_weight,
-                'target_weight' => $request->target_weight,
-                'subscription_plan' => 'free', // Default free
-            ]);
+            $passwordHash = !empty($validated['password'])
+                ? Hash::make($validated['password'])
+                : Hash::make(Str::random(40));
 
-            Log::info('User created successfully:', ['user_id' => $user->id]);
+            $user = User::create([
+                'nickname' => $validated['nickname'],
+                'username' => $validated['username'],
+                'email'    => $validated['email'],
+                'password' => $passwordHash,
+                'current_weight' => $validated['current_weight'],
+                'target_weight'  => $validated['target_weight'],
+                'subscription_plan' => 'free',
+
+                // ✅ admin flag default false
+                'is_admin' => false,
+
+                // google fields
+                'google_id' => $isGoogle ? ($google['google_id'] ?? null) : null,
+                'avatar'    => $isGoogle ? ($google['avatar'] ?? null) : null,
+            ]);
 
             Auth::login($user);
             $request->session()->regenerate();
-
-            // Set session untuk first login
             $request->session()->put('first_login', true);
 
-            // Redirect ke subscription plans page
-            return redirect()->route('subscription.plans')->with('success', 'Registrasi berhasil! Silakan pilih paket langganan.');
+            if ($isGoogle) {
+                session()->forget('google_register');
+            }
 
-
+            return redirect()
+                ->route('subscription.plans')
+                ->with('success', 'Registrasi berhasil! Silakan pilih paket langganan.');
         } catch (\Exception $e) {
             Log::error('Registration error: ' . $e->getMessage());
             return back()->withErrors(['error' => 'Terjadi kesalahan saat registrasi. Silakan coba lagi.']);
@@ -106,6 +135,7 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect('/');
     }
 }

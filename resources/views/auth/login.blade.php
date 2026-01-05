@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
             --primary: #6C63FF;
@@ -18,9 +19,7 @@
             --card-shadow: 0 20px 40px rgba(108, 99, 255, 0.15);
         }
 
-        * {
-            font-family: 'Poppins', sans-serif;
-        }
+        * { font-family: 'Poppins', sans-serif; }
 
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -35,10 +34,7 @@
         body::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            inset: 0;
             background:
                 radial-gradient(circle at 20% 80%, rgba(108, 99, 255, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, rgba(74, 144, 226, 0.1) 0%, transparent 50%);
@@ -57,6 +53,7 @@
             box-shadow: var(--card-shadow);
             overflow: hidden;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
         }
 
         .login-card:hover {
@@ -67,9 +64,7 @@
         .login-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 0; left: 0; right: 0;
             height: 5px;
             background: var(--gradient);
         }
@@ -87,18 +82,6 @@
             margin-bottom: 10px;
         }
 
-        .logo-icon {
-            width: 45px;
-            height: 45px;
-            background: var(--gradient);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-        }
-
         .logo-text {
             font-size: 2rem;
             font-weight: 700;
@@ -108,9 +91,7 @@
             background-clip: text;
         }
 
-        .login-body {
-            padding: 0 40px 40px;
-        }
+        .login-body { padding: 0 40px 40px; }
 
         .welcome-text {
             text-align: center;
@@ -119,12 +100,9 @@
             font-size: 1rem;
         }
 
-        .form-group {
-            margin-bottom: 25px;
-        }
+        .form-group { margin-bottom: 25px; }
 
         .form-label {
-            display: block;
             font-weight: 500;
             color: var(--dark);
             margin-bottom: 8px;
@@ -147,7 +125,7 @@
 
         .form-control {
             height: 48px;
-            padding: 0 45px 0 15px;
+            padding: 0 45px 0 45px;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             font-size: 1rem;
@@ -185,27 +163,7 @@
             transition: color 0.3s;
         }
 
-        .toggle-password:hover {
-            color: var(--primary);
-        }
-
-        .forgot-password {
-            text-align: right;
-            margin-bottom: 25px;
-        }
-
-        .forgot-password a {
-            color: var(--primary);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .forgot-password a:hover {
-            color: var(--secondary);
-            text-decoration: underline;
-        }
+        .toggle-password:hover { color: var(--primary); }
 
         .btn-login {
             background: var(--gradient);
@@ -223,6 +181,8 @@
             justify-content: center;
             gap: 10px;
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
 
         .btn-login:hover {
@@ -230,14 +190,10 @@
             box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
         }
 
-        .btn-login:active {
-            transform: translateY(0);
-        }
-
         .divider {
             display: flex;
             align-items: center;
-            margin: 30px 0;
+            margin: 25px 0;
             color: #999;
             font-size: 0.9rem;
         }
@@ -250,15 +206,14 @@
             background: #e0e0e0;
         }
 
-        .divider span {
-            padding: 0 15px;
-        }
+        .divider span { padding: 0 15px; }
 
+        /* === Tombol Google === */
         .social-login {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 30px;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
         }
 
         .social-btn {
@@ -270,7 +225,7 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--dark);
             text-decoration: none;
             transition: all 0.3s;
@@ -288,11 +243,6 @@
             font-size: 1.2rem;
         }
 
-        .social-btn.facebook i {
-            color: #4267B2;
-            font-size: 1.2rem;
-        }
-
         .login-footer {
             padding: 25px 40px;
             text-align: center;
@@ -304,7 +254,6 @@
             color: var(--primary);
             text-decoration: none;
             font-weight: 600;
-            transition: color 0.3s;
         }
 
         .login-footer a:hover {
@@ -326,54 +275,15 @@
             border-left: 4px solid #d32f2f;
         }
 
-        .alert i {
-            margin-right: 10px;
-        }
+        .alert i { margin-right: 10px; }
 
         @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 576px) {
-            .login-container {
-                padding: 10px;
-            }
-
-            .login-header {
-                padding: 30px 25px 15px;
-            }
-
-            .login-body {
-                padding: 0 25px 30px;
-            }
-
-            .login-footer {
-                padding: 20px 25px;
-            }
-
-            .logo-text {
-                font-size: 1.8rem;
-            }
-
-            .social-login {
-                grid-template-columns: 1fr;
-            }
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Loading state */
-        .btn-login.loading {
-            position: relative;
-            pointer-events: none;
-        }
-
+        .btn-login.loading { pointer-events: none; }
         .btn-login.loading::after {
             content: '';
             position: absolute;
@@ -385,26 +295,21 @@
             animation: spin 1s linear infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Input validation states */
-        .is-invalid {
-            border-color: #dc3545 !important;
-        }
-
+        .is-invalid { border-color: #dc3545 !important; }
         .invalid-feedback {
             display: block;
-            width: 100%;
             margin-top: 0.25rem;
             font-size: 0.875rem;
             color: #dc3545;
         }
 
-        /* Floating label animation */
-        .form-group:focus-within .form-label {
-            color: var(--primary);
+        @media (max-width: 576px) {
+            .login-header { padding: 30px 25px 15px; }
+            .login-body { padding: 0 25px 30px; }
+            .login-footer { padding: 20px 25px; }
+            .logo-text { font-size: 1.8rem; }
         }
     </style>
 </head>
@@ -423,12 +328,12 @@
                     @csrf
 
                     @if($errors->any())
-                    <div class="alert alert-danger">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-exclamation-triangle-fill"></i>
-                            <div>{{ $errors->first() }}</div>
+                        <div class="alert alert-danger">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <div>{{ $errors->first() }}</div>
+                            </div>
                         </div>
-                    </div>
                     @endif
 
                     <div class="form-group">
@@ -436,9 +341,7 @@
                             <i class="bi bi-person"></i>Username
                         </label>
                         <div class="input-group">
-                            <span class="input-icon">
-                                <i class="bi bi-person"></i>
-                            </span>
+                            <span class="input-icon"><i class="bi bi-person"></i></span>
                             <input type="text" class="form-control" id="username" name="username"
                                    placeholder="Masukkan username Anda" required value="{{ old('username') }}">
                         </div>
@@ -449,9 +352,7 @@
                             <i class="bi bi-lock"></i>Password
                         </label>
                         <div class="input-group">
-                            <span class="input-icon">
-                                <i class="bi bi-lock"></i>
-                            </span>
+                            <span class="input-icon"><i class="bi bi-lock"></i></span>
                             <input type="password" class="form-control" id="password" name="password"
                                    placeholder="Masukkan password Anda" required>
                             <button type="button" class="toggle-password" id="togglePassword">
@@ -469,6 +370,14 @@
                         <span>atau masuk dengan</span>
                     </div>
 
+                    <!-- ✅ Tombol Google -->
+                    <div class="social-login">
+                        <a href="{{ route('google.redirect') }}" class="social-btn google">
+                            <i class="bi bi-google"></i>
+                            Masuk dengan Google
+                        </a>
+                    </div>
+
                     <div class="login-footer">
                         <p class="mb-0">
                             Belum punya akun?
@@ -483,7 +392,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Password visibility toggle
             const togglePassword = document.getElementById('togglePassword');
             const passwordInput = document.getElementById('password');
             const eyeIcon = togglePassword.querySelector('i');
@@ -500,89 +408,30 @@
                 }
             });
 
-            // Form validation
             const loginForm = document.getElementById('loginForm');
             const loginButton = document.getElementById('loginButton');
 
             loginForm.addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                // Basic validation
                 const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value.trim();
                 let isValid = true;
 
-                // Clear previous errors
-                document.querySelectorAll('.is-invalid').forEach(el => {
-                    el.classList.remove('is-invalid');
-                });
-                document.querySelectorAll('.invalid-feedback').forEach(el => {
-                    el.remove();
-                });
+                document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                document.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
 
-                // Validate username
-                if (!username) {
-                    showValidationError('username', 'Username wajib diisi');
-                    isValid = false;
-                }
-
-                // Validate password
-                if (!password) {
-                    showValidationError('password', 'Password wajib diisi');
-                    isValid = false;
-                }
+                if (!username) { showValidationError('username', 'Username wajib diisi'); isValid = false; }
+                if (!password) { showValidationError('password', 'Password wajib diisi'); isValid = false; }
 
                 if (isValid) {
-                    // Show loading state
                     loginButton.classList.add('loading');
                     loginButton.innerHTML = '';
-
-                    // Simulate API call delay
-                    setTimeout(() => {
-                        // Submit form
-                        loginForm.submit();
-                    }, 1000);
+                    setTimeout(() => loginForm.submit(), 800);
                 }
             });
 
-            // Auto-focus username field
             document.getElementById('username').focus();
-
-            // Add ripple effect to login button
-            loginButton.addEventListener('click', function(e) {
-                const rect = this.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-
-                const ripple = document.createElement('span');
-                ripple.style.cssText = `
-                    position: absolute;
-                    border-radius: 50%;
-                    background: rgba(255, 255, 255, 0.6);
-                    transform: scale(0);
-                    animation: rippleEffect 0.6s linear;
-                    pointer-events: none;
-                    width: 100px;
-                    height: 100px;
-                    top: ${y - 50}px;
-                    left: ${x - 50}px;
-                `;
-
-                this.appendChild(ripple);
-                setTimeout(() => ripple.remove(), 600);
-            });
-
-            // Add ripple animation
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes rippleEffect {
-                    to {
-                        transform: scale(4);
-                        opacity: 0;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
         });
 
         function showValidationError(fieldId, message) {
@@ -596,7 +445,6 @@
 
             field.focus();
 
-            // Auto remove error after 3 seconds
             setTimeout(() => {
                 field.classList.remove('is-invalid');
                 errorDiv.remove();

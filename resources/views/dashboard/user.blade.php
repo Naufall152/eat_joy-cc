@@ -3,7 +3,7 @@
 @section('content')
 @include('components.navbar-user')
 
-@if(session('first_login'))
+@if($firstLogin)
 <div class="overlay" id="motivationOverlay"></div>
 <div class="motivation-popup" id="motivationPopup">
     <div class="text-center">
@@ -19,48 +19,66 @@
 </div>
 @endif
 
-<div class="container-fluid mt-4">
+<div class="container py-4">
     <div class="row">
-        <!-- Left Column - Recipes -->
+        {{-- LEFT COLUMN --}}
         <div class="col-lg-8">
-            <h3>Menu Diet untuk Anda</h3>
-            <div class="row">
-                @foreach($recipes as $recipe)
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ $recipe->title }}</h5>
-                            <p class="card-text"><i class="bi bi-fire"></i> {{ $recipe->calories }} Kalori</p>
-                            <button class="btn btn-primary view-recipe-detail"
+
+            {{-- ====== INI LOOP RECIPES (SUDAH DITAMBAH GAMBAR) ====== --}}
+            <div class="row g-3">
+                @forelse($recipes as $recipe)
+                    @php
+                        // ✅ Tentuin URL gambar (sesuaikan dengan kolom kamu)
+                        // Prioritas: image_url -> storage image -> placeholder
+                        $img = $recipe->image_url
+                            ?? (!empty($recipe->image) ? asset('storage/'.$recipe->image) : null)
+                            ?? asset('images/placeholder-food.jpg');
+                    @endphp
+
+                    <div class="col-md-6">
+                        <div class="card shadow-sm h-100">
+                            {{-- Thumbnail gambar --}}
+                            <div class="ratio ratio-16x9 bg-light">
+                                <img src="{{ $img }}"
+                                     alt="{{ $recipe->title }}"
+                                     style="width:100%;height:100%;object-fit:cover;">
+                            </div>
+
+                            <div class="card-body">
+                                <div class="fw-semibold mb-1">{{ $recipe->title }}</div>
+                                <div class="text-muted small mb-3">
+                                    <i class="bi bi-fire"></i> {{ $recipe->calories ?? 0 }} kal
+                                </div>
+
+                                <button class="btn btn-primary view-recipe-detail w-100"
                                     data-id="{{ $recipe->id }}"
                                     data-title="{{ $recipe->title }}"
                                     data-calories="{{ $recipe->calories }}"
                                     data-description="{{ $recipe->description }}"
-                                    data-ingredients="{{ $recipe->ingredients }}"
-                                    data-instructions="{{ $recipe->instructions }}">
-                                Lihat Detail
-                            </button>
+                                    data-image="{{ $img }}"
+                                    data-ingredients='@json($recipe->ingredients)'
+                                    data-instructions='@json($recipe->instructions)'>
+                                    Lihat Detail
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                @endforeach
+                @empty
+                    <div class="col-12 text-muted">Belum ada menu.</div>
+                @endforelse
             </div>
 
-            <!-- Pagination -->
-            <nav>
-                <ul class="pagination justify-content-center">
-                    <li class="page-item"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item"><a class="page-link" href="#">4</a></li>
-                    <li class="page-item"><a class="page-link" href="#">5</a></li>
-                </ul>
-            </nav>
+            {{-- ✅ Pagination bener (hapus hardcode 1..5 kamu) --}}
+            <div class="mt-4">
+                @if(method_exists($recipes,'links'))
+                    {{ $recipes->links() }}
+                @endif
+            </div>
         </div>
 
-        <!-- Right Column -->
+        {{-- RIGHT COLUMN --}}
         <div class="col-lg-4">
-            <!-- Daily Personalized Menu (Premium Feature) -->
+            {{-- Daily Personalized Menu (Premium Feature) --}}
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Daily Personalized Menu</h5>
@@ -74,7 +92,7 @@
                 </div>
             </div>
 
-            <!-- Blog Articles -->
+            {{-- Blog Articles --}}
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Artikel Terbaru</h5>
@@ -91,7 +109,7 @@
                 </div>
             </div>
 
-            <!-- BMI Calculator -->
+            {{-- BMI Calculator --}}
             <div class="card mt-4">
                 <div class="card-body">
                     <h5 class="card-title">Kalkulator BMI</h5>
@@ -104,22 +122,31 @@
 
 @include('components.footer')
 
-<!-- Recipe Detail Modal -->
+{{-- ====== MODAL: TAMBAH GAMBAR + RENDER LIST ====== --}}
 <div class="modal fade" id="recipeDetailModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
+
             <div class="modal-body">
+                {{-- ✅ gambar di modal --}}
+                <div class="ratio ratio-16x9 bg-light rounded overflow-hidden mb-3">
+                    <img id="modalImage" src="" alt="" style="width:100%;height:100%;object-fit:cover;">
+                </div>
+
                 <p><i class="bi bi-fire"></i> <span id="modalCalories"></span> Kalori</p>
+
                 <h6>Deskripsi:</h6>
                 <p id="modalDescription"></p>
+
                 <h6>Bahan-bahan:</h6>
-                <p id="modalIngredients"></p>
-                <h6>Cara Membuat:</h6>
-                <p id="modalInstructions"></p>
+                <div id="modalIngredients"></div>
+
+                <h6 class="mt-3">Cara Membuat:</h6>
+                <div id="modalInstructions"></div>
             </div>
         </div>
     </div>
@@ -131,28 +158,56 @@
         document.getElementById('motivationOverlay').style.display = 'none';
     }
 
+    function renderList(value){
+        try { if (typeof value === 'string') value = JSON.parse(value); } catch(e){}
+        if (Array.isArray(value)) {
+            if (!value.length) return '<div class="text-muted">-</div>';
+            return '<ul class="mb-0 ps-3">' + value.map(v => `<li>${escapeHtml(String(v))}</li>`).join('') + '</ul>';
+        }
+        if (!value) return '<div class="text-muted">-</div>';
+        return `<div>${escapeHtml(String(value))}</div>`;
+    }
+
+    function escapeHtml(str){
+        return str
+            .replaceAll('&','&amp;')
+            .replaceAll('<','&lt;')
+            .replaceAll('>','&gt;')
+            .replaceAll('"','&quot;')
+            .replaceAll("'","&#039;");
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const recipeButtons = document.querySelectorAll('.view-recipe-detail');
-        const modal = new bootstrap.Modal(document.getElementById('recipeDetailModal'));
+        const modalEl = document.getElementById('recipeDetailModal');
+        const modal = new bootstrap.Modal(modalEl);
 
         recipeButtons.forEach(button => {
             button.addEventListener('click', function() {
-                document.querySelector('#recipeDetailModal .modal-title').textContent = this.dataset.title;
-                document.getElementById('modalCalories').textContent = this.dataset.calories;
-                document.getElementById('modalDescription').textContent = this.dataset.description;
-                document.getElementById('modalIngredients').textContent = this.dataset.ingredients;
-                document.getElementById('modalInstructions').textContent = this.dataset.instructions;
+                modalEl.querySelector('.modal-title').textContent = this.dataset.title || '';
+                document.getElementById('modalCalories').textContent = this.dataset.calories || '0';
+                document.getElementById('modalDescription').textContent = this.dataset.description || '-';
+
+                // ✅ set gambar modal
+                const img = this.dataset.image || '';
+                const imgEl = document.getElementById('modalImage');
+                imgEl.src = img;
+                imgEl.alt = this.dataset.title || '';
+
+                // ✅ render list (biar ga mentah JSON string)
+                document.getElementById('modalIngredients').innerHTML = renderList(this.dataset.ingredients);
+                document.getElementById('modalInstructions').innerHTML = renderList(this.dataset.instructions);
 
                 modal.show();
             });
         });
 
         // Auto show motivation popup on first login
-        @if(session('first_login'))
+        @if($firstLogin)
         setTimeout(() => {
             document.getElementById('motivationPopup').style.display = 'block';
             document.getElementById('motivationOverlay').style.display = 'block';
-        }, 1000);
+        }, 700);
         @endif
     });
 </script>

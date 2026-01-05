@@ -9,167 +9,187 @@ use Illuminate\Support\Facades\Storage;
 
 class RecipeController extends Controller
 {
-    /**
-     * Show the form for creating a new recipe.
-     */
-    public function create()
+    private function planView(string $viewBase): string
     {
-        return view('recipes.create');
+    $plan = Auth::user()->subscription_plan ?? '';
+
+    // ✅ normalisasi biar starter-plus / starter plus / StarterPlus tetap kebaca
+    $plan = strtolower($plan);
+    $plan = str_replace([' ', '-'], '_', $plan);
+
+    return match ($plan) {
+        'starter_plus' => "recipes.starter_plus.$viewBase", // UNGU
+        'starter'      => "recipes.starter.$viewBase",      // HIJAU
+        default        => "recipes.$viewBase",              // fallback kalau free/others
+        };
     }
 
-    /**
-     * Store a newly created recipe in storage.
-     */
-    public function store(Request $request)
+    private function ensureOwner(Recipe $recipe): void
     {
-        // Validasi input
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'calories' => 'required|integer|min:1|max:5000',
-            'ingredients' => 'required|array|min:1',
-            'ingredients.*' => 'required|string',
-            'instructions' => 'required|array|min:1',
-            'instructions.*' => 'required|string',
-            'cooking_time' => 'required|integer|min:1|max:480',
-            'difficulty' => 'required|in:easy,medium,hard',
-            'type' => 'required|in:regular,premium',
-            'visibility' => 'required|in:public,private',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        ]);
+        if ((int)$recipe->user_id !== (int)Auth::id()) {
+            abort(403, 'Kamu tidak punya akses ke menu ini.');
+        }
+    }
 
-        // Handle image upload
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('recipe-images', 'public');
+    public function myRecipes(Request $request)
+    {
+        $q = Recipe::query()->where('user_id', Auth::id());
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $q->where(function ($sub) use ($search) {
+                $sub->where('title', 'like', "%$search%")
+                    ->orWhere('description', 'like', "%$search%");
+            });
         }
 
-        // Create recipe
+        // Filter visibility
+        if ($request->filled('visibility') && in_array($request->visibility, ['public', 'private'], true)) {
+            $q->where('visibility', $request->visibility);
+        }
+
+        // Sort
+        $sort = $request->get('sort', 'newest');
+        if ($sort === 'oldest') $q->orderBy('created_at', 'asc');
+        else $q->orderBy('created_at', 'desc');
+
+        $userRecipes = $q->paginate(8)->withQueryString();
+
+        return view($this->planView('my-recipes'), compact('userRecipes'));
+    }
+
+    public function create()
+    {
+        return view($this->planView('create'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => ['required','string','max:120'],
+            'calories' => ['required','numeric','min:0','max:9999'],
+            'description' => ['required','string','max:2000'],
+            'visibility' => ['required','in:public,private'],
+            'type' => ['nullable','in:regular,premium'],
+            'ingredients' => ['nullable','array'],
+            'ingredients.*' => ['nullable','string','max:255'],
+            'instructions' => ['nullable','array'],
+            'instructions.*' => ['nullable','string','max:255'],
+            'image' => ['nullable','image','mimes:jpg,jpeg,png,webp','max:5120'],
+        ]);
+
+        // rapihin array (hapus yang kosong)
+        $ingredients = collect($request->input('ingredients', []))
+            ->map(fn($v) => trim((string)$v))
+            ->filter(fn($v) => $v !== '')
+            ->values()
+            ->all();
+
+        $instructions = collect($request->input('instructions', []))
+            ->map(fn($v) => trim((string)$v))
+            ->filter(fn($v) => $v !== '')
+            ->values()
+            ->all();
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            // ✅ simpan ke storage/app/public/recipes
+            $imagePath = $request->file('image')->store('recipes', 'public'); // contoh: recipes/xxx.jpg
+        }
+
         $recipe = Recipe::create([
             'user_id' => Auth::id(),
             'title' => $validated['title'],
-            'description' => $validated['description'],
             'calories' => $validated['calories'],
-            'ingredients' => $validated['ingredients'],
-            'instructions' => $validated['instructions'],
-            'cooking_time' => $validated['cooking_time'],
-            'difficulty' => $validated['difficulty'],
-            'type' => $validated['type'],
+            'description' => $validated['description'],
             'visibility' => $validated['visibility'],
-            'image' => $imagePath,
+            'type' => $validated['type'] ?? 'regular',
+            'ingredients' => $ingredients,
+            'instructions' => $instructions,
+            'image' => $imagePath, // simpan path TANPA "storage/"
         ]);
 
-        return redirect()->route('recipes.show', $recipe->id)
-            ->with('success', 'Menu berhasil dibuat!');
+        return redirect()
+            ->route('recipes.show', $recipe->id)
+            ->with('success', '✅ Menu berhasil dibuat!');
     }
 
-    /**
-     * Display all user's recipes.
-     */
-    public function myRecipes()
+    public function show(Recipe $recipe)
     {
-        $recipes = Auth::user()->recipes()
-            ->orderBy('created_at', 'desc')
-            ->paginate(12);
-
-        return view('recipes.my-recipes', compact('recipes'));
+        $this->ensureOwner($recipe);
+        return view($this->planView('show'), compact('recipe'));
     }
 
-    /**
-     * Display the specified recipe.
-     */
-    public function show($id)
+    public function edit(Recipe $recipe)
     {
-        $recipe = Recipe::with('user')->findOrFail($id);
-
-        // Check if recipe is private and user is not the owner
-        if ($recipe->visibility === 'private' && $recipe->user_id !== Auth::id()) {
-            abort(403, 'Menu ini bersifat pribadi.');
-        }
-
-        return view('recipes.show', compact('recipe'));
+        $this->ensureOwner($recipe);
+        return view($this->planView('edit'), compact('recipe'));
     }
 
-    /**
-     * Show the form for editing the specified recipe.
-     */
-    public function edit($id)
+    public function update(Request $request, Recipe $recipe)
     {
-        $recipe = Recipe::findOrFail($id);
+        $this->ensureOwner($recipe);
 
-        // Authorization check
-        if ($recipe->user_id !== Auth::id()) {
-            abort(403, 'Anda tidak memiliki izin untuk mengedit menu ini.');
-        }
-
-        return view('recipes.edit', compact('recipe'));
-    }
-
-    /**
-     * Update the specified recipe in storage.
-     */
-    public function update(Request $request, $id)
-    {
-        $recipe = Recipe::findOrFail($id);
-
-        // Authorization check
-        if ($recipe->user_id !== Auth::id()) {
-            abort(403, 'Anda tidak memiliki izin untuk mengedit menu ini.');
-        }
-
-        // Validasi input
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'calories' => 'required|integer|min:1|max:5000',
-            'ingredients' => 'required|array|min:1',
-            'ingredients.*' => 'required|string',
-            'instructions' => 'required|array|min:1',
-            'instructions.*' => 'required|string',
-            'cooking_time' => 'required|integer|min:1|max:480',
-            'difficulty' => 'required|in:easy,medium,hard',
-            'type' => 'required|in:regular,premium',
-            'visibility' => 'required|in:public,private',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'title' => ['required','string','max:120'],
+            'calories' => ['required','numeric','min:0','max:9999'],
+            'description' => ['required','string','max:2000'],
+            'visibility' => ['required','in:public,private'],
+            'type' => ['nullable','in:regular,premium'],
+            'ingredients' => ['nullable','array'],
+            'ingredients.*' => ['nullable','string','max:255'],
+            'instructions' => ['nullable','array'],
+            'instructions.*' => ['nullable','string','max:255'],
+            'image' => ['nullable','image','mimes:jpg,jpeg,png,webp','max:5120'],
         ]);
 
-        // Handle image upload
+        $ingredients = collect($request->input('ingredients', []))
+            ->map(fn($v) => trim((string)$v))
+            ->filter(fn($v) => $v !== '')
+            ->values()
+            ->all();
+
+        $instructions = collect($request->input('instructions', []))
+            ->map(fn($v) => trim((string)$v))
+            ->filter(fn($v) => $v !== '')
+            ->values()
+            ->all();
+
+        // replace image kalau upload baru
         if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($recipe->image) {
+            if (!empty($recipe->image)) {
                 Storage::disk('public')->delete($recipe->image);
             }
-
-            $imagePath = $request->file('image')->store('recipe-images', 'public');
-            $validated['image'] = $imagePath;
+            $recipe->image = $request->file('image')->store('recipes', 'public');
         }
 
-        $recipe->update($validated);
+        $recipe->title = $validated['title'];
+        $recipe->calories = $validated['calories'];
+        $recipe->description = $validated['description'];
+        $recipe->visibility = $validated['visibility'];
+        $recipe->type = $validated['type'] ?? $recipe->type ?? 'regular';
+        $recipe->ingredients = $ingredients;
+        $recipe->instructions = $instructions;
+        $recipe->save();
 
-        return redirect()->route('recipes.show', $recipe->id)
-            ->with('success', 'Menu berhasil diperbarui!');
+        return redirect()
+            ->route('recipes.show', $recipe->id)
+            ->with('success', '✅ Menu berhasil diperbarui!');
     }
 
-    /**
-     * Remove the specified recipe from storage.
-     */
-    public function destroy($id)
+    public function destroy(Recipe $recipe)
     {
-        $recipe = Recipe::findOrFail($id);
+        $this->ensureOwner($recipe);
 
-        // Authorization check
-        if ($recipe->user_id !== Auth::id()) {
-            abort(403, 'Anda tidak memiliki izin untuk menghapus menu ini.');
-        }
-
-        // Delete image if exists
-        if ($recipe->image) {
+        if (!empty($recipe->image)) {
             Storage::disk('public')->delete($recipe->image);
         }
 
         $recipe->delete();
 
-        return redirect()->route('recipes.my')
-            ->with('success', 'Menu berhasil dihapus!');
+        return redirect()
+            ->route('recipes.my')
+            ->with('success', '🗑️ Menu berhasil dihapus!');
     }
 }

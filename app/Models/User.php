@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
-    use Notifiable;
+    use HasFactory, Notifiable;
 
     protected $fillable = [
         'nickname',
@@ -17,8 +18,12 @@ class User extends Authenticatable
         'password',
         'current_weight',
         'target_weight',
+        'google_id',
+        'avatar',
         'subscription_plan',
-        'subscription_ends_at'
+        'subscription_ends_at',
+        'role',
+        'is_admin',
     ];
 
     protected $hidden = [
@@ -31,7 +36,8 @@ class User extends Authenticatable
         'password' => 'hashed',
         'current_weight' => 'float',
         'target_weight' => 'float',
-        'subscription_ends_at' => 'datetime'
+        'subscription_ends_at' => 'datetime',
+        'is_admin' => 'boolean',
     ];
 
     // ========== HELPER METHODS ==========
@@ -56,6 +62,12 @@ class User extends Authenticatable
         return $this->subscription_plan === 'free';
     }
 
+        public function isAdmin(): bool
+    {
+         return ($this->role ?? null) === 'admin' || (bool) ($this->is_admin ?? false);
+    }
+
+
     // ========== RELATIONSHIPS ==========
 
     // Relationship dengan Recipe
@@ -63,4 +75,6 @@ class User extends Authenticatable
     {
         return $this->hasMany(Recipe::class, 'user_id');
     }
+
+
 }

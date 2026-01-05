@@ -310,6 +310,7 @@
             gap: 10px;
             transition: all 0.3s ease;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
         }
 
         .free .btn-subscribe {
@@ -321,6 +322,7 @@
             background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(255, 167, 38, 0.3);
+            color: white;
         }
 
         .starter .btn-subscribe {
@@ -332,6 +334,7 @@
             background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+            color: white;
         }
 
         .starter-plus .btn-subscribe {
@@ -343,6 +346,7 @@
             background: linear-gradient(135deg, #673AB7 0%, #4A148C 100%);
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(156, 39, 176, 0.3);
+            color: white;
         }
 
         .price-note {
@@ -495,16 +499,9 @@
             }
         }
 
-        /* Animation for plan cards */
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .plan-card {
@@ -519,7 +516,6 @@
             animation-delay: 0.4s;
         }
 
-        /* Uniform height for all cards */
         .features-list {
             min-height: 320px;
         }
@@ -530,7 +526,6 @@
             align-items: center;
         }
 
-        /* Color indicators untuk konsistensi dengan dashboard */
         .color-indicator {
             display: flex;
             justify-content: center;
@@ -546,23 +541,10 @@
             color: #666;
         }
 
-        .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .dot-free {
-            background: var(--free);
-        }
-
-        .dot-starter {
-            background: var(--starter);
-        }
-
-        .dot-starter-plus {
-            background: var(--starter-plus);
-        }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot-free { background: var(--free); }
+        .dot-starter { background: var(--starter); }
+        .dot-starter-plus { background: var(--starter-plus); }
     </style>
 </head>
 <body>
@@ -594,52 +576,39 @@
                             </h4>
                             <ul class="features-list">
                                 <li class="feature-item">
-                                    <div class="feature-icon available">
-                                        <i class="bi bi-check-lg"></i>
-                                    </div>
+                                    <div class="feature-icon available"><i class="bi bi-check-lg"></i></div>
                                     <span class="feature-text">Akses 24 Menu Diet</span>
                                 </li>
                                 <li class="feature-item">
-                                    <div class="feature-icon available">
-                                        <i class="bi bi-check-lg"></i>
-                                    </div>
+                                    <div class="feature-icon available"><i class="bi bi-check-lg"></i></div>
                                     <span class="feature-text">Kalkulator BMI</span>
                                 </li>
                                 <li class="feature-item">
-                                    <div class="feature-icon available">
-                                        <i class="bi bi-check-lg"></i>
-                                    </div>
+                                    <div class="feature-icon available"><i class="bi bi-check-lg"></i></div>
                                     <span class="feature-text">Artikel & Blog Nutrisi</span>
                                 </li>
                                 <li class="feature-item">
-                                    <div class="feature-icon unavailable">
-                                        <i class="bi bi-x-lg"></i>
-                                    </div>
+                                    <div class="feature-icon unavailable"><i class="bi bi-x-lg"></i></div>
                                     <span class="feature-text">Create Menu User</span>
                                 </li>
                                 <li class="feature-item">
-                                    <div class="feature-icon unavailable">
-                                        <i class="bi bi-x-lg"></i>
-                                    </div>
+                                    <div class="feature-icon unavailable"><i class="bi bi-x-lg"></i></div>
                                     <span class="feature-text">Daily Planner</span>
                                 </li>
                                 <li class="feature-item">
-                                    <div class="feature-icon unavailable">
-                                        <i class="bi bi-x-lg"></i>
-                                    </div>
+                                    <div class="feature-icon unavailable"><i class="bi bi-x-lg"></i></div>
                                     <span class="feature-text">Unlocked Premium Dish</span>
                                 </li>
                                 <li class="feature-item">
-                                    <div class="feature-icon unavailable">
-                                        <i class="bi bi-x-lg"></i>
-                                    </div>
+                                    <div class="feature-icon unavailable"><i class="bi bi-x-lg"></i></div>
                                     <span class="feature-text">AI Chat Assistant</span>
                                 </li>
                             </ul>
                         </div>
 
                         <div class="plan-footer">
-                            <form method="POST" action="{{ route('subscription.subscribe') }}">
+                            {{-- ✅ Free -> POST ke subscription.free --}}
+                            <form method="POST" action="{{ route('subscription.free') }}">
                                 @csrf
                                 <input type="hidden" name="plan" value="free">
                                 <button type="submit" class="btn-subscribe">
@@ -672,43 +641,30 @@
                             </h4>
                             <ul class="features-list">
                                 <li class="feature-item">
-                                    <div class="feature-icon available">
-                                        <i class="bi bi-check-lg"></i>
-                                    </div>
+                                    <div class="feature-icon available"><i class="bi bi-check-lg"></i></div>
                                     <span class="feature-text">Create Menu User</span>
                                 </li>
                                 <li class="feature-item">
-                                    <div class="feature-icon available">
-                                        <i class="bi bi-check-lg"></i>
-                                    </div>
+                                    <div class="feature-icon available"><i class="bi bi-check-lg"></i></div>
                                     <span class="feature-text">Daily Planner Premium</span>
                                 </li>
                                 <li class="feature-item">
-                                    <div class="feature-icon available">
-                                        <i class="bi bi-check-lg"></i>
-                                    </div>
+                                    <div class="feature-icon available"><i class="bi bi-check-lg"></i></div>
                                     <span class="feature-text">Progress Tracker</span>
                                     <span class="feature-tag">Baru</span>
                                 </li>
                                 <li class="feature-item">
-                                    <div class="feature-icon available">
-                                        <i class="bi bi-check-lg"></i>
-                                    </div>
+                                    <div class="feature-icon available"><i class="bi bi-check-lg"></i></div>
                                     <span class="feature-text">Unlocked Premium Dish</span>
                                 </li>
                                 <li class="feature-item">
-                                    <div class="feature-icon unavailable">
-                                        <i class="bi bi-x-lg"></i>
-                                    </div>
+                                    <div class="feature-icon unavailable"><i class="bi bi-x-lg"></i></div>
                                     <span class="feature-text">AI Chat Assistant</span>
                                 </li>
                                 <li class="feature-item">
-                                    <div class="feature-icon unavailable">
-                                        <i class="bi bi-x-lg"></i>
-                                    </div>
+                                    <div class="feature-icon unavailable"><i class="bi bi-x-lg"></i></div>
                                     <span class="feature-text">Menu Rekomendasi AI</span>
                                 </li>
-                                <!-- Empty item to match height -->
                                 <li class="feature-item" style="visibility: hidden;">
                                     <div class="feature-icon"></div>
                                     <span class="feature-text"></span>
@@ -717,14 +673,11 @@
                         </div>
 
                         <div class="plan-footer">
-                            <form method="POST" action="{{ route('subscription.subscribe') }}">
-                                @csrf
-                                <input type="hidden" name="plan" value="starter">
-                                <button type="submit" class="btn-subscribe">
-                                    <i class="bi bi-arrow-right-circle"></i>
-                                    Pilih Starter
-                                </button>
-                            </form>
+                            {{-- ✅ Starter -> langsung GET ke checkout (midtrans snap token) --}}
+                            <a href="{{ route('subscription.checkout', 'starter') }}" class="btn-subscribe">
+                                <i class="bi bi-arrow-right-circle"></i>
+                                Pilih Starter
+                            </a>
                             <p class="price-note">Hemat 30% dari harga normal</p>
                         </div>
                     </div>
@@ -750,43 +703,30 @@
                             </h4>
                             <ul class="features-list">
                                 <li class="feature-item">
-                                    <div class="feature-icon available">
-                                        <i class="bi bi-check-lg"></i>
-                                    </div>
+                                    <div class="feature-icon available"><i class="bi bi-check-lg"></i></div>
                                     <span class="feature-text">AI Chat Assistant</span>
                                     <span class="feature-tag">Eksklusif</span>
                                 </li>
                                 <li class="feature-item">
-                                    <div class="feature-icon available">
-                                        <i class="bi bi-check-lg"></i>
-                                    </div>
+                                    <div class="feature-icon available"><i class="bi bi-check-lg"></i></div>
                                     <span class="feature-text">Menu Rekomendasi AI</span>
                                 </li>
                                 <li class="feature-item">
-                                    <div class="feature-icon available">
-                                        <i class="bi bi-check-lg"></i>
-                                    </div>
+                                    <div class="feature-icon available"><i class="bi bi-check-lg"></i></div>
                                     <span class="feature-text">Priority Support</span>
                                 </li>
                                 <li class="feature-item">
-                                    <div class="feature-icon available">
-                                        <i class="bi bi-check-lg"></i>
-                                    </div>
+                                    <div class="feature-icon available"><i class="bi bi-check-lg"></i></div>
                                     <span class="feature-text">Analytics Premium</span>
                                 </li>
                                 <li class="feature-item">
-                                    <div class="feature-icon available">
-                                        <i class="bi bi-check-lg"></i>
-                                    </div>
+                                    <div class="feature-icon available"><i class="bi bi-check-lg"></i></div>
                                     <span class="feature-text">Unlimited Refresh</span>
                                 </li>
                                 <li class="feature-item">
-                                    <div class="feature-icon available">
-                                        <i class="bi bi-check-lg"></i>
-                                    </div>
+                                    <div class="feature-icon available"><i class="bi bi-check-lg"></i></div>
                                     <span class="feature-text">Menu Premium Tanpa Batas</span>
                                 </li>
-                                <!-- Empty items to match height -->
                                 <li class="feature-item" style="visibility: hidden;">
                                     <div class="feature-icon"></div>
                                     <span class="feature-text"></span>
@@ -799,14 +739,11 @@
                         </div>
 
                         <div class="plan-footer">
-                            <form method="POST" action="{{ route('subscription.subscribe') }}">
-                                @csrf
-                                <input type="hidden" name="plan" value="starter_plus">
-                                <button type="submit" class="btn-subscribe">
-                                    <i class="bi bi-rocket-takeoff"></i>
-                                    Pilih Starter+
-                                </button>
-                            </form>
+                            {{-- ✅ Starter+ -> langsung GET ke checkout --}}
+                            <a href="{{ route('subscription.checkout', 'starter_plus') }}" class="btn-subscribe">
+                                <i class="bi bi-rocket-takeoff"></i>
+                                Pilih Starter+
+                            </a>
                             <p class="price-note">Hemat 30% dari harga bulanan biasa</p>
                         </div>
                     </div>
@@ -901,15 +838,20 @@
                     document.querySelectorAll('.faq-answer').forEach(item => {
                         if (item !== answer) {
                             item.classList.remove('active');
-                            item.previousElementSibling.querySelector('i').classList.remove('bi-chevron-up');
-                            item.previousElementSibling.querySelector('i').classList.add('bi-chevron-down');
+                            const ic = item.previousElementSibling.querySelector('i');
+                            if (ic) {
+                                ic.classList.remove('bi-chevron-up');
+                                ic.classList.add('bi-chevron-down');
+                            }
                         }
                     });
 
                     // Toggle current answer
                     answer.classList.toggle('active');
-                    icon.classList.toggle('bi-chevron-down');
-                    icon.classList.toggle('bi-chevron-up');
+                    if (icon) {
+                        icon.classList.toggle('bi-chevron-down');
+                        icon.classList.toggle('bi-chevron-up');
+                    }
                 });
             });
 
@@ -939,7 +881,6 @@
 
             // Smooth hover effects
             const subscribeButtons = document.querySelectorAll('.btn-subscribe');
-
             subscribeButtons.forEach(button => {
                 button.addEventListener('mouseenter', function() {
                     this.style.transform = 'translateY(-3px) scale(1.02)';
@@ -950,49 +891,26 @@
                 });
             });
 
-            // Form submission
+            // Form submission loading state (hanya untuk FORM, bukan <a>)
             const forms = document.querySelectorAll('form');
-
             forms.forEach(form => {
-                form.addEventListener('submit', function(e) {
+                form.addEventListener('submit', function() {
                     const button = this.querySelector('.btn-subscribe');
-                    const originalText = button.innerHTML;
+                    if (!button) return;
 
-                    // Tampilkan loading state
                     button.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Memproses...';
                     button.disabled = true;
-
-                    // Biarkan form submit ke Laravel
-                    // Loading state akan hilang saat halaman redirect
                 });
             });
 
             // Add spin animation
             const style = document.createElement('style');
             style.textContent = `
-                .spin {
-                    animation: spin 1s linear infinite;
-                }
-
-                @keyframes spin {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(360deg); }
-                }
+                .spin { animation: spin 1s linear infinite; }
+                @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
             `;
             document.head.appendChild(style);
         });
-
-            <form method="POST" action="{{ route('subscription.pay.redirect') }}">
-            @csrf
-            <input type="hidden" name="plan" value="starter">
-            <button type="submit">Pilih Starter</button>
-        </form>
-
-            <form method="POST" action="{{ route('subscription.pay.redirect') }}">
-            @csrf
-            <input type="hidden" name="plan" value="starter_plus">
-            <button type="submit">Pilih Starter+</button>
-        </form>
     </script>
 </body>
 </html>

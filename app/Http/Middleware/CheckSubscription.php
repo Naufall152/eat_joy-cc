@@ -12,6 +12,10 @@ class CheckSubscription
     {
         $user = Auth::user();
 
+        if ($user && $user->isAdmin()) {
+        return $next($request);
+        }
+
         if (!$user) {
             return redirect()->route('login');
         }

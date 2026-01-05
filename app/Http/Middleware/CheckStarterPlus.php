@@ -12,6 +12,10 @@ class CheckStarterPlus
     {
         $user = Auth::user();
 
+        if ($user && $user->isAdmin()) {
+        return $next($request);
+        }
+
         if (!$user || $user->subscription_plan !== 'starter_plus') {
             return response()->json([
                 'success' => false,
