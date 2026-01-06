@@ -45,7 +45,6 @@ RUN composer install \
     --no-interaction \
     --prefer-dist \
     --optimize-autoloader \
-    --no-scripts \
  && composer dump-autoload -o \
  && rm -f bootstrap/cache/*.php || true
 
