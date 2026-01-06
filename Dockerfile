@@ -55,3 +55,7 @@ EXPOSE 80
 
 # Jalankan Apache
 CMD ["apache2-foreground"]
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
