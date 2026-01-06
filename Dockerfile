@@ -45,6 +45,9 @@ RUN composer install \
     --no-interaction \
     --no-dev \
     --optimize-autoloader
+    --no-scripts
+
+RUN rm -f bootstrap/cache/*.php || true
 
 # Set permission folder penting
 RUN chown -R www-data:www-data storage bootstrap/cache \
