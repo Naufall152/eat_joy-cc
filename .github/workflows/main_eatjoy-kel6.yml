@@ -53,19 +53,13 @@ jobs:
         with:
           name: php-app
       
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_3DD8135D0C4E49919D67249082C2A812 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B144F92BDAB24713AB37DDC2DB0EEBCD }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_411162159A8544EF9E3DA2E70624273A }}
-
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'eatjoy-kel6'
-          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: .
 
           
+
