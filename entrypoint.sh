@@ -1,27 +1,14 @@
 #!/bin/sh
 set -e
 
-echo "=== ENTRYPOINT VERSION: 2026-01-06-fix-collision ==="
-
+echo "=== ENTRYPOINT VERSION: fix-collision-2 ==="
 cd /var/www/html
 
-echo "=== Clearing Laravel caches WITHOUT artisan ==="
-echo "Before:"
-ls -la bootstrap/cache || true
-
-# Ini yang paling penting: hapus cache provider/config yang bisa nyangkut Collision
+# hapus cache laravel yang sering nyangkut provider
 rm -f bootstrap/cache/*.php || true
 
-# Bersihkan cache view & cache file
-rm -rf storage/framework/views/* || true
-rm -rf storage/framework/cache/* || true
-
-echo "After:"
-ls -la bootstrap/cache || true
-
-# Permission aman
+# amanin permission
 chown -R www-data:www-data storage bootstrap/cache || true
 chmod -R 775 storage bootstrap/cache || true
 
-echo "=== Starting Apache ==="
 exec apache2-foreground
