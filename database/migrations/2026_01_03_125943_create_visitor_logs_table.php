@@ -7,16 +7,18 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('visitor_logs', function (Blueprint $table) {
-            $table->id();
-            $table->string('path')->nullable();
-            $table->string('ip')->nullable();
-            $table->string('user_agent', 512)->nullable();
-            $table->date('visited_date');
-            $table->timestamps();
+        if (!Schema::hasTable('visitor_logs')) {
+            Schema::create('visitor_logs', function (Blueprint $table) {
+                $table->id();
+                $table->string('path')->nullable();
+                $table->string('ip')->nullable();
+                $table->string('user_agent', 512)->nullable();
+                $table->date('visited_date');
+                $table->timestamps();
 
-            $table->index(['visited_date']);
-        });
+                $table->index(['visited_date']);
+            });
+        }
     }
 
     public function down(): void

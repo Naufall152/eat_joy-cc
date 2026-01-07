@@ -9,8 +9,12 @@ return new class extends Migration {
     {
         Schema::table('users', function (Blueprint $table) {
             // kalau kamu sudah punya kolom email/username dll, ini aman
-            $table->string('google_id')->nullable()->unique()->after('id');
-            $table->string('avatar')->nullable()->after('google_id');
+            if (!Schema::hasColumn('users', 'google_id')) {
+                $table->string('google_id')->nullable()->unique()->after('id');
+            }
+            if (!Schema::hasColumn('users', 'avatar')) {
+                $table->string('avatar')->nullable()->after('google_id');
+            }
         });
     }
 
